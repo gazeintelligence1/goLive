@@ -1,8 +1,9 @@
-import PyQt5.QtCore as pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QSizePolicy, QPushButton, QLineEdit
 from lib import is_valid_ip
 import pupil_labs.realtime_api.simple as pupil
+from PupilWorker_class import PupilWorker
 
 button_color = '#D1D0D0'
 
@@ -13,8 +14,9 @@ class PupilIpBox(QWidget):
     and prompt the user to enter the ip of the companion phone then try to connect trough it
     """
     lookup_ip = pyqtSignal()
-    def __init__(self):
+    def __init__(self, sig):
         super().__init__()
+        self.sig = sig
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
@@ -42,7 +44,7 @@ class PupilIpBox(QWidget):
         self.layout.addLayout(hbox)
         
 
-    def setup_pupil_device(pupil_dev : pupil.Device):
+    def setup_pupil_device(self, pupil_dev : pupil.Device):
         """
         launch the streams for a pupil neon device and connect them to the main window
         
@@ -56,11 +58,11 @@ class PupilIpBox(QWidget):
         global pupil_worker
         pupil_worker = PupilWorker(pupil_dev)
         
-        pupil_worker.newFrame.connect(win.video_box.on_new_frame)
-        pupil_worker.newGaze.connect(win.onNewGaze)
-        pupil_worker.newAcc.connect(win.head_widget.onNewData)
+        pupil_worker.newFrame.connect(self.sig.video_box.on_new_frame)
+        pupil_worker.newGaze.connect(self.sig.onNewGaze)
+        pupil_worker.newAcc.connect(self.sig.head_widget.onNewData)
 
-        sig.newDevice.emit(pupil_dev.phone_name, 'pupil')
+        self.sig.newDevice.emit(pupil_dev.phone_name, 'pupil')
 
 
     def add_pupil_by_ip(self):

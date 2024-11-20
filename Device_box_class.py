@@ -6,13 +6,11 @@ from PyQt5.QtGui import QPixmap
 
 from PyQt5.QtCore import Qt
 
-from MainWindow_class import MainWindow
-
 class Device_box(PWidget):
     """
     Box to display a connected device and its controls
     """
-    def __init__(self, name : str, dev_type : str):
+    def __init__(self, name : str, dev_type : str, sig):
         """
         Parameters
         ----------
@@ -39,11 +37,11 @@ class Device_box(PWidget):
         
         if dev_type == 'faros':
             plot_button = QCheckBox('Show \n ECG')
-            plot_button.stateChanged.connect(MainWindow.showECG)
+            plot_button.stateChanged.connect(sig.showECG)
             self.layout.addWidget(plot_button,20)
         else:
             head_button = QCheckBox('Show \n head')
-            head_button.stateChanged.connect(MainWindow.show_head)
+            head_button.stateChanged.connect(sig.show_head)
             self.layout.addWidget(head_button, 20)
 
     

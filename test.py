@@ -5,6 +5,9 @@ import numpy as np
 import threading
 from FarosWorker_class import FarosWorker
 from ControlPanel_class import ControlPanel
+import sys
+from multiprocessing import freeze_support
+from Signal_class import Signal
 
 # Classe PWidget qui hérite de QWidget, utilisée pour permettre la personnalisation du fond
 class PWidget(QWidget):
@@ -81,12 +84,12 @@ class MainWindow(PWidget):
         self.layout.setRowStretch(0, 80)  # Ajustement de l'espace de la ligne
 
         # # # Ajout du panneau de contrôle (widget simulé ici)
-        self.control_panel = ControlPanel()  # Remplacer QWidget par la classe réelle ControlPanel
+        self.control_panel = ControlPanel(sig, MainWindow)  # Remplacer QWidget par la classe réelle ControlPanel
         self.layout.addWidget(self.control_panel, 0, 3, 2, 1)
         self.layout.setColumnStretch(3, 5)
 
-        # self.addDevice('Faros-253TEST', 'faros')
-        # self.addDevice('OnePlus 11TEST','pupil')
+        self.addDevice('Faros-253TEST', 'faros')
+        self.addDevice('OnePlus 11TEST','pupil')
 
         # # Création d'un layout supplémentaire pour d'autres widgets
         # self.extras_layout = QHBoxLayout()
@@ -137,7 +140,9 @@ class MainWindow(PWidget):
 
 # Code d'exécution principal
 if __name__ == "__main__":
-    import sys
+    
+    freeze_support() #necessary on windows to not spawn a second app when a subprocess is launched
+    sig = Signal()
     app = QApplication(sys.argv)  # Création de l'application Qt
     window = MainWindow()  # Instanciation de la fenêtre principale
     #window.move(0, 0)

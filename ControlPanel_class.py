@@ -55,7 +55,7 @@ def record_screen(stop_event, output_filename="output.avi", frame_rate=12, width
 
 
 class ControlPanel(PWidget):
-    def __init__(self, sig):
+    def __init__(self, sig, MainWindow):
         super().__init__()
         self.layout = QVBoxLayout(self)
         self.setStyleSheet("background-color: white")
@@ -78,7 +78,7 @@ class ControlPanel(PWidget):
         self.marker_box = MarkerBox()
         self.layout.addWidget(self.marker_box, stretch = 5)
         
-        self.device_list = DeviceList(sig)
+        self.device_list = DeviceList(sig, MainWindow)
         self.layout.addWidget(self.device_list, stretch = 5)
         
         options_box = QVBoxLayout()
@@ -98,6 +98,7 @@ class ControlPanel(PWidget):
         self.layout.addLayout(options_box)
         
         self.layout.addStretch(1)
+        
     def start_recording(self):
         """
         start the recording in the pupil neon companion app

@@ -6,6 +6,9 @@ from LoadingAnimation_class import LoadingAnimation
 from PupilIpBox_class import PupilIpBox
 from Device_box_class import Device_box
 import bluetooth
+from PupilWorker_class import PupilWorker
+
+import pupil_labs.realtime_api.simple as pupil
 
 from faros import libfaros
 
@@ -19,8 +22,10 @@ class DeviceList(QWidget):
     running_searches = ["faros","pupil"]
     found_devices = []
     
-    def __init__(self, sig):
+    def __init__(self, sig, MainWindow):
         super().__init__()
+        self.sig = sig
+        self.MainWindow = MainWindow
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(Separateur("Connected Devices"))
         self.layout.setContentsMargins(0,0,0,0)
@@ -43,7 +48,7 @@ class DeviceList(QWidget):
         self.layout.addStretch()
         
     def addDevice(self, name, dev_type):
-        self.layout.insertWidget(1,Device_box(name,dev_type))
+        self.layout.insertWidget(1,Device_box(name,dev_type, self.sig, self.MainWindow))
         self.found_devices.append(dev_type)
         self.n_devices += 1
         
@@ -73,7 +78,7 @@ class DeviceList(QWidget):
             l.setText(l.text().replace('Pupil','').replace(',',''))
     
 
-    def find_faros(sig):
+    def find_faros(self, sig):
         """
         look for nearby faros devices on the bluetooth network and connect to the first on then start streaming 
         its data to the LSL
@@ -109,6 +114,47 @@ class DeviceList(QWidget):
         finally:
             sig.doneSearching.emit("faros")     
 
+
+    def setup_pupil_device(pupil_dev : pupil.Device, sig, win):
+        """
+        launch the streams for a pupil neon device and connect them to the main window
+        
+        Parameters
+        ----------
+        pupil_dev : pupil.Device
+            discovered pupil device from the pupil api
+
+        """
+        print("Setup pupil device:", pupil_dev)
+        global pupil_worker
+        pupil_worker = PupilWorker(pupil_dev)
+        
+        pupil_worker.newFrame.connect(win.video_box.on_new_frame)
+        pupil_worker.newGaze.connect(win.onNewGaze)
+        pupil_worker.newAcc.connect(win.head_widget.onNewData)
+
+        sig.newDevice.emit(pupil_dev.phone_name, 'pupil')
+
+    def find_pupil(self, sig):
+        """
+        launch the discovery of a pupil neon device. first through the api's search function then by trying to 
+        connect directly to neon.local:8080 if it fails
+        """
+        print("searching for pupil invisible device ..\n")
+        global pupil_dev
+        pupil_dev = pupil.discover_one_device()
+        if pupil_dev == None:
+            try:
+                print("looking up neon.local")
+                pupil_dev = pupil.Device(address='neon.local', port=8080)
+            except Exception as e:
+                print('error in pupil discovery thread:', e)
+        if pupil_dev:
+            print("found the following device:", pupil_dev)
+            self.setup_pupil_device(pupil_dev, self.sig, self.MainWindow)
+        else:
+            print("no Pupil device found")
+        sig.doneSearching.emit("pupil")
 
     def relaunchSearch(self, sig):
         if "faros" not in self.found_devices:
