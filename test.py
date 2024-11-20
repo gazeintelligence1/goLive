@@ -84,7 +84,7 @@ class MainWindow(PWidget):
         self.layout.setRowStretch(0, 80)  # Ajustement de l'espace de la ligne
 
         # # # Ajout du panneau de contrôle (widget simulé ici)
-        self.control_panel = ControlPanel(sig, MainWindow)  # Remplacer QWidget par la classe réelle ControlPanel
+        self.control_panel = ControlPanel(sig, main_win)  # Remplacer QWidget par la classe réelle ControlPanel
         self.layout.addWidget(self.control_panel, 0, 3, 2, 1)
         self.layout.setColumnStretch(3, 5)
 
