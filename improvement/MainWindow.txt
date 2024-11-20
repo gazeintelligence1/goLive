@@ -1,0 +1,15 @@
+Amélioration potentielle
+Pour éviter que toutes les instances de MainWindow partagent les mêmes variables, déclarez-les en tant que variables d'instance :
+
+class MainWindow(PWidget):
+    def __init__(self):
+        super().__init__()
+        self.rr_intervals = []
+        self.hrv_interval = None
+        self.acc_diffs = np.array([])
+        self.last_gaze = None
+        self.time_fixating = 0
+        self.in_fixation = False
+        self.fixations = []
+
+Cela garantit que chaque instance de MainWindow aura sa propre copie de ces variables.
